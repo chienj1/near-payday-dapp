@@ -1,0 +1,11 @@
+{
+  "name": "near-fluidity-dapp",
+  "version": "1.0.0",
+  "description": "A fluidity pay build on NEAR",
+  "main": "index.js",
+  "author": "chienj1",
+  "license": "MIT",
+  "devDependencies": {
+    "near-sdk-as": "^3.2.3"
+  }
+}
