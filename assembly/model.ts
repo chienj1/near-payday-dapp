@@ -11,7 +11,7 @@ export class Account {
     balance: u128;
 
     initBalance: u128;
-    paid: u128;
+    available: u128;
     taken: u128;
     start: bool;
     public static setAccount(_account: Account): Account {
@@ -30,6 +30,21 @@ export class Account {
     }
     public decreaseBalance(ammount: u128): void {
         this.balance = u128.sub(this.balance, ammount);
+    }
+    public setBegin(_beginTime: string): void {
+        this.beginTime = _beginTime;
+    }
+    public setEnd(_endTime: string): void {
+        this.endTime = _endTime;
+    }
+    public setNumOfPay(_numofpay: i32): void {
+        this.numofpay = _numofpay;
+    }
+    public setReceiver(_receiver: string): void {
+        this.receiver = _receiver;
+    }
+    public setStart(): void {
+        this.start = true;
     }
 }
 

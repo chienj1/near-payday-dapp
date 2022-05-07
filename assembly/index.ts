@@ -22,6 +22,12 @@ export function depositAssets(id: string): void {
     if (account == null) {
         throw new Error("account not found");
     }
+    if (account.owner !== context.sender) {
+        throw new Error("Not your account")
+    }
+    if (account.start == true) {
+        throw new Error("Payment already start")
+    }
     account.increaseBalance(context.attachedDeposit);
     listedAccounts.set(account.id, account);
 }
@@ -31,8 +37,37 @@ export function withdrawAssets(id: string, ammount: u128): void {
     if (account == null) {
         throw new Error("account not found");
     }
+    if (account.owner !== context.sender) {
+        throw new Error("Not your account")
+    }
+    if (account.start == true) {
+        throw new Error("Payment already start")
+    }
     ContractPromiseBatch.create(account.owner).transfer(ammount);
     account.decreaseBalance(ammount);
+    listedAccounts.set(account.id, account);
+}
+
+export function startPayment( id: string, 
+                              beginTime: string, 
+                              endTime: string, 
+                              numofpay: i32, 
+                              receiver: string ): void {
+    const account = getAccount(id);
+    if (account == null) {
+        throw new Error("account not found");
+    }
+    if (account.owner !== context.sender) {
+        throw new Error("Not your account")
+    }
+    if (account.start == true) {
+        throw new Error("Payment already start")
+    }
+    account.setBegin(beginTime);
+    account.setEnd(endTime);
+    account.setNumOfPay(numofpay);
+    account.setReceiver(receiver);
+    account.setStart();
     listedAccounts.set(account.id, account);
 }
 
@@ -48,13 +83,18 @@ export function killAccount(id: string): void {
 export function getPayment(id: string, ammount: u128): void {
     let account = getAccount(id);
     if (account == null) {
-        throw new Error("account not found");
+        throw new Error("Account not found");
+    }
+    if (account.receiver !== context.sender) {
+        throw new Error("Not your account");
+    }
+    if (account.start == false) {
+        throw new Error("Payment is not started");
+    }
+    if (ammount > account.available) {
+        throw new Error("Ask too much");
     }
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
     account.decreaseBalance(ammount);
     listedAccounts.set(account.id, account);
 }
-
-
-
-
