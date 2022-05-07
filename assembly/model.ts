@@ -3,28 +3,27 @@ import { PersistentUnorderedMap, u128, context } from "near-sdk-as";
 @nearBindgen
 export class Account {
     id: string;
-    name: string;
-    description: string;
-    image: string;
-    location: string;
-    price: u128;
+    beginTime: string;
+    endTime: string;
+    numofpay: i32;
+    receiver: string;
     owner: string;
     balance: u128;
-    sold: u32;
+
+    initBalance: u128;
+    paid: u128;
+    taken: u128;
+    start: bool;
     public static setAccount(_account: Account): Account {
         const account = new Account();
         account.id = _account.id;
-        account.name = _account.name;
-        account.description = _account.description;
-        account.image = _account.image;
-        account.location = _account.location;
-        account.price = _account.price;
+        account.beginTime = _account.beginTime;
+        account.endTime = _account.endTime;
+        account.numofpay = _account.numofpay;
+        account.receiver = _account.receiver;
         account.owner = context.sender;
         account.balance = context.attachedDeposit;
         return account;
-    }
-    public incrementSoldAmount(): void {
-        this.sold = this.sold + 1;
     }
     public increaseBalance(ammount: u128): void {
         this.balance = u128.add(this.balance, ammount);
@@ -42,7 +41,6 @@ export const listedAccounts = new PersistentUnorderedMap<string, Account>("LISTE
 
 /*@nearBindgen
 export class Account{
-    id: string;
     sender: string;
     receiver: string;
     beginDate: string;
@@ -88,6 +86,7 @@ export class Account{
     public updateTakan(ammount: u128): void {
         this.taken = u128.add(this.taken, ammount);
     }
+    pucluc setStart()
 }
 
 export const listedAccounts = new PersistentUnorderedMap<string, Account>("LISTED_ACCOUNTS");*/
