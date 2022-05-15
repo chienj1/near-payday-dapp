@@ -44,64 +44,20 @@ export class Account {
         this.receiver = _receiver;
     }
     public setStart(): void {
+        this.initBalance = this.balance;
+        this.available = u128.Zero;
+        this.taken = u128.Zero;
         this.start = true;
+    }
+    public setAvailable(ammount: u128): void {
+        this.available = ammount;
+    }
+    public setTaken(ammount: u128): void {
+        this.taken = ammount;
+    }
+    public increaseTaken(ammount: u128): void {
+        this.taken = u128.add(this.taken, ammount);
     }
 }
 
 export const listedAccounts = new PersistentUnorderedMap<string, Account>("LISTED_ACCOUNTS");
-
-
-
-
-
-/*@nearBindgen
-export class Account{
-    sender: string;
-    receiver: string;
-    beginDate: string;
-    endDate: string;
-    available: u128;
-    numofsends: u32;
-    balance: u128;
-    start: bool;
-    initBalance: u128;
-    taken: u128;
-    public static setAccount(_account: Account): Account {
-        const account = new Account();
-        account.id = _account.id;
-        account.receiver = _account.receiver;
-        account.balance = _account.balance;
-        account.beginDate = _account.beginDate;
-        account.endDate = _account.endDate;
-        account.numofsends = _account.numofsends;
-        account.sender = context.sender;
-        return account;
-    }
-    public getId(id: string): string {
-        return this.id;
-    }
-    public getOwner(owner: string): string {
-        return this.sender;
-    }
-    public getReceiver(receiver: string): string {
-        return this.receiver;
-    }
-    public getBalance(balance: u128): u128 {
-        return this.balance;
-    }
-    public increaseBalance(change: u128): void {
-        this.balance = u128.add(this.balance, change);
-    }
-    public decreaseBalance(change: u128): void {
-        this.balance = u128.sub(this.balance, change);
-    }
-    //public updateAvailable(): void {
-    //    this.available = floor((now-this.beginDate)/(this.end-this.beginDate)*this.numofsends)*this.balance/this.numofsends-taken;
-    //}
-    public updateTakan(ammount: u128): void {
-        this.taken = u128.add(this.taken, ammount);
-    }
-    pucluc setStart()
-}
-
-export const listedAccounts = new PersistentUnorderedMap<string, Account>("LISTED_ACCOUNTS");*/

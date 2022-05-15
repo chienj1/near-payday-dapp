@@ -4,7 +4,7 @@ import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
 export function createAccount(account: Account): void {
     let storedAccount = listedAccounts.get(account.id);
     if (storedAccount !== null) {
-        throw new Error(`an account with ${account.id} already exists`);
+        throw new Error(`An account with ${account.id} already exists`);
     }
     listedAccounts.set(account.id, Account.setAccount(account));
 }
@@ -20,7 +20,7 @@ export function getAccounts(): Account[] {
 export function depositAssets(id: string): void {
     const account = getAccount(id);
     if (account == null) {
-        throw new Error("account not found");
+        throw new Error("Account not found");
     }
     if (account.owner !== context.sender) {
         throw new Error("Not your account")
@@ -35,7 +35,7 @@ export function depositAssets(id: string): void {
 export function withdrawAssets(id: string, ammount: u128): void {
     const account = getAccount(id);
     if (account == null) {
-        throw new Error("account not found");
+        throw new Error("Account not found");
     }
     if (account.owner !== context.sender) {
         throw new Error("Not your account")
@@ -55,7 +55,7 @@ export function startPayment( id: string,
                               receiver: string ): void {
     const account = getAccount(id);
     if (account == null) {
-        throw new Error("account not found");
+        throw new Error("Account not found");
     }
     if (account.owner !== context.sender) {
         throw new Error("Not your account")
@@ -75,10 +75,14 @@ export function killAccount(id: string): void {
     listedAccounts.delete(id);
 }
 
-/*export function startPayment(id:string): void {
+export function updateAvailable(id: string, available: u128): void {
     let account = getAccount(id);
-    if 
-}*/
+    if (account == null) {
+        throw new Error("Account not found");
+    }
+    account.setAvailable(available);
+    listedAccounts.set(account.id, account);
+}
 
 export function getPayment(id: string, ammount: u128): void {
     let account = getAccount(id);
@@ -96,5 +100,6 @@ export function getPayment(id: string, ammount: u128): void {
     }
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
     account.decreaseBalance(ammount);
+    account.increaseTaken(ammount);
     listedAccounts.set(account.id, account);
 }
