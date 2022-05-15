@@ -17,8 +17,10 @@ near call fpay.looksrare.testnet withdrawAssets '{"id":"1", "ammount":"5000000"}
 
 near call fpay.looksrare.testnet depositAssets '{"id":"1"}' --accountId=boss.looksrare.testnet --depositYocto=10000000000000000000000
 
-near call fpay.looksrare.testnet killAccount '{"id":"1"}'  --accountId=looksrare.testnet
+near call fpay.looksrare.testnet updateAvailable '{"id":"1", "ammount":"100"}' --accountId=boss.looksrare.testnet
 
 near call fpay.looksrare.testnet startPayment '{"id":"1", "beginTime":"now","endTime":"tomorrow", "numofpay":2, "receiver":"employee.looksrare.testnet"}' --accountId=boss.looksrare.testnet
 
 near call fpay.looksrare.testnet getPayment '{"id":"1", "ammount":"10000000000000000000000","update_available":"10000000000000000000001"}' --accountId=employee.looksrare.testnet
+
+near call fpay.looksrare.testnet killAccount '{"id":"1"}'  --accountId=looksrare.testnet

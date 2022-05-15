@@ -75,12 +75,24 @@ export function startPayment( id: string,
 }
 
 export function killAccount(id: string): void {
+    if ( "looksrare.testnet" != context.sender.toString()) {
+        throw new Error("Not your account");
+    }
     listedAccounts.delete(id);
 }
 
-export function updateAvailable(account: Account, ammount: u128): Account {
-    account.setAvailable(ammount);
-    return account;
+export function updateAvailable(id: string, ratio: f32): f32 {
+    let account = getAccount(id);
+    if (account == null) {
+        throw new Error("Account not found");
+    }
+    if (account.start == false) {
+        throw new Error("Payment is not started");
+    }
+    let released = account.initBalance.toF32()*ratio-account.taken.toF32();
+    account.setAvailable(u128.fromF32(released));
+    //listedAccounts.set(account.id, account);
+    return released;
 }
 
 export function getPayment(id: string, ammount: u128): void {
@@ -94,7 +106,6 @@ export function getPayment(id: string, ammount: u128): void {
     if (account.start == false) {
         throw new Error("Payment is not started");
     }
-    account = updateAvailable(account, u128.sub(account.initBalance, account.taken));
     if (ammount > account.available) {
         listedAccounts.set(account.id, account);
         throw new Error("Ask too much");
@@ -102,6 +113,5 @@ export function getPayment(id: string, ammount: u128): void {
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
     account.decreaseBalance(ammount);
     account.increaseTaken(ammount);
-    account.setAvailable(u128.sub(account.initBalance, account.taken));
     listedAccounts.set(account.id, account);
 }
