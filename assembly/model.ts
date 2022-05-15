@@ -17,10 +17,6 @@ export class Account {
     public static setAccount(_account: Account): Account {
         const account = new Account();
         account.id = _account.id;
-        account.beginTime = _account.beginTime;
-        account.endTime = _account.endTime;
-        account.numofpay = _account.numofpay;
-        account.receiver = _account.receiver;
         account.owner = context.sender;
         account.balance = context.attachedDeposit;
         return account;

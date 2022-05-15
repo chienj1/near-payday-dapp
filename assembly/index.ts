@@ -3,7 +3,7 @@ import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
 
 export function createAccount(account: Account): void {
     let storedAccount = listedAccounts.get(account.id);
-    if (storedAccount !== null) {
+    if (storedAccount != null) {
         throw new Error(`An account with ${account.id} already exists`);
     }
     listedAccounts.set(account.id, Account.setAccount(account));
@@ -22,7 +22,7 @@ export function depositAssets(id: string): void {
     if (account == null) {
         throw new Error("Account not found");
     }
-    if (account.owner !== context.sender) {
+    if (account.owner != context.sender.toString()) {
         throw new Error("Not your account")
     }
     if (account.start == true) {
@@ -37,11 +37,14 @@ export function withdrawAssets(id: string, ammount: u128): void {
     if (account == null) {
         throw new Error("Account not found");
     }
-    if (account.owner !== context.sender) {
+    if (account.owner != context.sender.toString()) {
         throw new Error("Not your account")
     }
     if (account.start == true) {
         throw new Error("Payment already start")
+    }
+    if (account.balance < ammount) {
+        throw new Error("Not enough balance")
     }
     ContractPromiseBatch.create(account.owner).transfer(ammount);
     account.decreaseBalance(ammount);
@@ -57,11 +60,11 @@ export function startPayment( id: string,
     if (account == null) {
         throw new Error("Account not found");
     }
-    if (account.owner !== context.sender) {
-        throw new Error("Not your account")
+    if (account.owner != context.sender.toString()) {
+        throw new Error("Not your account");
     }
     if (account.start == true) {
-        throw new Error("Payment already start")
+        throw new Error("Payment already start");
     }
     account.setBegin(beginTime);
     account.setEnd(endTime);
@@ -75,13 +78,9 @@ export function killAccount(id: string): void {
     listedAccounts.delete(id);
 }
 
-export function updateAvailable(id: string, available: u128): void {
-    let account = getAccount(id);
-    if (account == null) {
-        throw new Error("Account not found");
-    }
-    account.setAvailable(available);
-    listedAccounts.set(account.id, account);
+export function updateAvailable(account: Account, ammount: u128): Account {
+    account.setAvailable(ammount);
+    return account;
 }
 
 export function getPayment(id: string, ammount: u128): void {
@@ -89,17 +88,20 @@ export function getPayment(id: string, ammount: u128): void {
     if (account == null) {
         throw new Error("Account not found");
     }
-    if (account.receiver !== context.sender) {
+    if (account.receiver != context.sender.toString()) {
         throw new Error("Not your account");
     }
     if (account.start == false) {
         throw new Error("Payment is not started");
     }
+    account = updateAvailable(account, u128.sub(account.initBalance, account.taken));
     if (ammount > account.available) {
+        listedAccounts.set(account.id, account);
         throw new Error("Ask too much");
     }
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
     account.decreaseBalance(ammount);
     account.increaseTaken(ammount);
+    account.setAvailable(u128.sub(account.initBalance, account.taken));
     listedAccounts.set(account.id, account);
 }

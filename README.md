@@ -9,7 +9,7 @@ near send fpay.looksrare.testnet employee.looksrare.testnet 0.01
 yarn asb
 near deploy --accountId=fpay.looksrare.testnet --wasmFile=build/release/near-fluidity-dapp.wasm
 
-near call fpay.looksrare.testnet createAccount '{"account":{"id": "1",  "beginTime": "202205072325",  "endTime": "202205072359", "numofpay": 2, "receiver": "employee.looksrare.testnet"}}' --accountId=boss.looksrare.testnet --depositYocto=1000000000000000000000000
+near call fpay.looksrare.testnet createAccount '{"account":{"id": "1"}}' --accountId=boss.looksrare.testnet --depositYocto=1000000000000000000000000
 
 near view fpay.looksrare.testnet getAccounts --accountId=boss.looksrare.testnet
 
@@ -19,5 +19,6 @@ near call fpay.looksrare.testnet depositAssets '{"id":"1"}' --accountId=boss.loo
 
 near call fpay.looksrare.testnet killAccount '{"id":"1"}'  --accountId=looksrare.testnet
 
-near call fpay.looksrare.testnet getPayment '{"id":"3", "ammount":"100000000000000000000000"}' --accountId=employee.looksrare.testnet
+near call fpay.looksrare.testnet startPayment '{"id":"1", "beginTime":"now","endTime":"tomorrow", "numofpay":2, "receiver":"employee.looksrare.testnet"}' --accountId=boss.looksrare.testnet
 
+near call fpay.looksrare.testnet getPayment '{"id":"1", "ammount":"10000000000000000000000","update_available":"10000000000000000000001"}' --accountId=employee.looksrare.testnet
