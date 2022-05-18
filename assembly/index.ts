@@ -1,5 +1,11 @@
 import { Account, listedAccounts } from './model';
 import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
+import { datetime } from 'near-sdk-as';
+
+
+export function getNowTime(): String {
+    return datetime.block_datetime().toString(); // timezone=UTC+0
+}
 
 export function createAccount(account: Account): void {
     let storedAccount = listedAccounts.get(account.id);
