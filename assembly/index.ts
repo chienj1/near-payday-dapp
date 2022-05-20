@@ -1,10 +1,24 @@
 import { Account, listedAccounts } from './model';
 import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
 import { datetime } from 'near-sdk-as';
+import { PlainDateTime, Duration } from "assemblyscript-temporal";
 
+function getTimeDiff(time1: PlainDateTime, time2: PlainDateTime): Duration {
+    return time1.until(time2);
+}
 
-export function getNowTime(): String {
-    return datetime.block_datetime().toString(); // timezone=UTC+0
+function getNowTime(): PlainDateTime {
+    return datetime.block_datetime();
+}
+
+function getTimeRatio(_beginTime: string, _endTime: string): f32 {
+    let beginTime = PlainDateTime.from(_beginTime);
+    let nowTime = getNowTime();
+    let endTime = PlainDateTime.from(_endTime);
+    let timeToEnd = getTimeDiff(beginTime, endTime);
+    let timeToNow = getTimeDiff(beginTime, nowTime);
+    
+    return 0.01;
 }
 
 export function createAccount(account: Account): void {
