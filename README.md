@@ -9,8 +9,6 @@ near send fpay.looksrare.testnet employee.looksrare.testnet 0.01
 yarn asb
 near deploy --accountId=fpay.looksrare.testnet --wasmFile=build/release/near-fluidity-dapp.wasm
 
-near call fpay.looksrare.testnet getNowTime --accountId=boss.looksrare.testnet
-
 near call fpay.looksrare.testnet createAccount '{"account":{"id": "1"}}' --accountId=boss.looksrare.testnet --depositYocto=1000000000000000000000000
 
 near view fpay.looksrare.testnet getAccounts --accountId=boss.looksrare.testnet

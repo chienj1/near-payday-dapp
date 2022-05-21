@@ -1,30 +1,6 @@
 import { Account, listedAccounts } from './model';
 import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
-import { datetime } from 'near-sdk-as';
-import { PlainDateTime, Duration } from "assemblyscript-temporal";
-
-function getTimeDiff(time1: PlainDateTime, time2: PlainDateTime): Duration {
-    return time1.until(time2);
-}
-
-function getNowTime(): PlainDateTime {
-    return datetime.block_datetime();
-}
-
-function getDurationSecond(duration: Duration): f32 {
-    return f32((((duration.years*365+duration.days)*24+duration.hours)*60+duration.minutes)*60+duration.seconds);
-}
-
-export function getTimeRatio(_beginTime: string, _endTime: string): f32 {
-    let beginTime = PlainDateTime.from(_beginTime);
-    let nowTime = getNowTime();
-    let endTime = PlainDateTime.from(_endTime);
-    let timeBeginToEnd = getTimeDiff(beginTime, endTime);
-    let timeBeginToNow = getTimeDiff(beginTime, nowTime);
-    let ratio = getDurationSecond(timeBeginToNow)/getDurationSecond(timeBeginToEnd);
-
-    return ratio;
-}
+import { getTimeRatio } from './timer';
 
 export function createAccount(account: Account): void {
     let storedAccount = listedAccounts.get(account.id);
@@ -106,7 +82,7 @@ export function killAccount(id: string): void {
     listedAccounts.delete(id);
 }
 
-export function updateAvailable(id: string, ratio: f32): f32 {
+export function updateAvailable(id: string): void {
     let account = getAccount(id);
     if (account == null) {
         throw new Error("Account not found");
@@ -114,10 +90,10 @@ export function updateAvailable(id: string, ratio: f32): f32 {
     if (account.start == false) {
         throw new Error("Payment is not started");
     }
+    let ratio = getTimeRatio(account.beginTime, account.endTime);
     let released = account.initBalance.toF32()*ratio-account.taken.toF32();
     account.setAvailable(u128.fromF32(released));
-    //listedAccounts.set(account.id, account);
-    return released;
+    listedAccounts.set(account.id, account);
 }
 
 export function getPayment(id: string, ammount: u128): void {
