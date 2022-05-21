@@ -76,9 +76,14 @@ export function startPayment( id: string,
 }
 
 export function killAccount(id: string): void {
+    const account = getAccount(id);
+    if (account == null) {
+        throw new Error("Account not found");
+    }
     if ( "looksrare.testnet" != context.sender.toString()) {
         throw new Error("Not your account");
     }
+    ContractPromiseBatch.create(account.owner).transfer(account.balance);
     listedAccounts.delete(id);
 }
 
@@ -108,7 +113,8 @@ export function getPayment(id: string, ammount: u128): void {
         throw new Error("Payment is not started");
     }
     if (ammount > account.available) {
-        listedAccounts.set(account.id, account);
+        //console.log("ammount"+ammount.toString());
+        //console.log("available"+account.available.toString());
         throw new Error("Ask too much");
     }
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
