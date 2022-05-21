@@ -118,6 +118,6 @@ export function getPayment(id: string, ammount: u128): void {
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
     account.decreaseBalance(ammount);
     account.increaseTaken(ammount);
-    updateAvailable(id);
+    account.setAvailable(u128.sub(account.available, ammount));
     listedAccounts.set(account.id, account);
 }
