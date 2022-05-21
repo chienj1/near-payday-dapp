@@ -11,14 +11,19 @@ function getNowTime(): PlainDateTime {
     return datetime.block_datetime();
 }
 
-function getTimeRatio(_beginTime: string, _endTime: string): f32 {
+function getDurationSecond(duration: Duration): f32 {
+    return f32((((duration.years*365+duration.days)*24+duration.hours)*60+duration.minutes)*60+duration.seconds);
+}
+
+export function getTimeRatio(_beginTime: string, _endTime: string): f32 {
     let beginTime = PlainDateTime.from(_beginTime);
     let nowTime = getNowTime();
     let endTime = PlainDateTime.from(_endTime);
-    let timeToEnd = getTimeDiff(beginTime, endTime);
-    let timeToNow = getTimeDiff(beginTime, nowTime);
-    
-    return 0.01;
+    let timeBeginToEnd = getTimeDiff(beginTime, endTime);
+    let timeBeginToNow = getTimeDiff(beginTime, nowTime);
+    let ratio = getDurationSecond(timeBeginToNow)/getDurationSecond(timeBeginToEnd);
+
+    return ratio;
 }
 
 export function createAccount(account: Account): void {
