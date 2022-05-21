@@ -26,4 +26,4 @@ near call fpay.looksrare.testnet getPayment '{"id":"1", "ammount":"50"}' --accou
 
 near call fpay.looksrare.testnet killAccount '{"id":"1"}'  --accountId=looksrare.testnet
 
-time format ok = '2022-04-20T10:45:32.000000000' (minimum: nanosecond)
+time format ok = '2022-04-20T05:45:32.123456789' (minimum: nanosecond)

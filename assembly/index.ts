@@ -113,13 +113,11 @@ export function getPayment(id: string, ammount: u128): void {
         throw new Error("Payment is not started");
     }
     if (ammount > account.available) {
-        //console.log("ammount"+ammount.toString());
-        //console.log("available"+account.available.toString());
         throw new Error("Ask too much");
     }
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
     account.decreaseBalance(ammount);
     account.increaseTaken(ammount);
-    account.setAvailable(u128.sub(account.available, ammount));
+    updateAvailable(id);
     listedAccounts.set(account.id, account);
 }
