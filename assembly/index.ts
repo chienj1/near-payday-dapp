@@ -113,7 +113,7 @@ export function getPayment(id: string, ammount: u128): void {
         throw new Error("Payment is not started");
     }
     if (ammount > account.available) {
-        throw new Error("Ask too much");
+        throw new Error("Ask too much, should be less than "+account.available.toString());
     }
     ContractPromiseBatch.create(account.receiver).transfer(ammount);
     account.decreaseBalance(ammount);
