@@ -1,55 +1,55 @@
-import { Account, listedAccounts } from './model';
+import { Payflow, listedPayflows } from './model';
 import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
 import { getTimeRatio } from './timer';
 
-export function createAccount(account: Account): void {
-    let storedAccount = listedAccounts.get(account.id);
-    if (storedAccount != null) {
-        throw new Error(`An account with ${account.id} already exists`);
+export function setPayflow(payflow: Payflow): void {
+    let storedPayflow = listedPayflows.get(payflow.id);
+    if (storedPayflow != null) {
+        throw new Error(`An payflow with ${payflow.id} already exists`);
     }
-    listedAccounts.set(account.id, Account.setAccount(account));
+    listedPayflows.set(payflow.id, Payflow.fromPayflow(payflow));
 }
 
-export function getAccount(id: string): Account | null {
-    return listedAccounts.get(id);
+export function getPayflow(id: string): Payflow | null {
+    return listedPayflows.get(id);
 }
 
-export function getAccounts(): Account[] {
-    return listedAccounts.values();
+export function getPayflows(): Payflow[] {
+    return listedPayflows.values();
 }
 
 export function depositAssets(id: string): void {
-    const account = getAccount(id);
-    if (account == null) {
-        throw new Error("Account not found");
+    const payflow = getPayflow(id);
+    if (payflow == null) {
+        throw new Error("Payflow not found");
     }
-    if (account.owner != context.sender.toString()) {
-        throw new Error("Not your account")
+    if (payflow.owner != context.sender.toString()) {
+        throw new Error("Not your payflow")
     }
-    if (account.start == true) {
+    if (payflow.start == true) {
         throw new Error("Payment already start")
     }
-    account.increaseBalance(context.attachedDeposit);
-    listedAccounts.set(account.id, account);
+    payflow.increaseBalance(context.attachedDeposit);
+    listedPayflows.set(payflow.id, payflow);
 }
 
 export function withdrawAssets(id: string, ammount: u128): void {
-    const account = getAccount(id);
-    if (account == null) {
-        throw new Error("Account not found");
+    const payflow = getPayflow(id);
+    if (payflow == null) {
+        throw new Error("Payflow not found");
     }
-    if (account.owner != context.sender.toString()) {
-        throw new Error("Not your account")
+    if (payflow.owner != context.sender.toString()) {
+        throw new Error("Not your payflow")
     }
-    if (account.start == true) {
+    if (payflow.start == true) {
         throw new Error("Payment already start")
     }
-    if (account.balance < ammount) {
+    if (payflow.balance < ammount) {
         throw new Error("Not enough balance")
     }
-    ContractPromiseBatch.create(account.owner).transfer(ammount);
-    account.decreaseBalance(ammount);
-    listedAccounts.set(account.id, account);
+    ContractPromiseBatch.create(payflow.owner).transfer(ammount);
+    payflow.decreaseBalance(ammount);
+    listedPayflows.set(payflow.id, payflow);
 }
 
 export function startPayment( id: string, 
@@ -57,67 +57,67 @@ export function startPayment( id: string,
                               endTime: string, 
                               numofpay: i32, 
                               receiver: string ): void {
-    const account = getAccount(id);
-    if (account == null) {
-        throw new Error("Account not found");
+    const payflow = getPayflow(id);
+    if (payflow == null) {
+        throw new Error("Payflow not found");
     }
-    if (account.owner != context.sender.toString()) {
-        throw new Error("Not your account");
+    if (payflow.owner != context.sender.toString()) {
+        throw new Error("Not your payflow");
     }
-    if (account.start == true) {
+    if (payflow.start == true) {
         throw new Error("Payment already start");
     }
-    account.setBegin(beginTime);
-    account.setEnd(endTime);
-    account.setNumOfPay(numofpay);
-    account.setReceiver(receiver);
-    account.setStart();
-    listedAccounts.set(account.id, account);
+    payflow.setBegin(beginTime);
+    payflow.setEnd(endTime);
+    payflow.setNumOfPay(numofpay);
+    payflow.setReceiver(receiver);
+    payflow.setStart();
+    listedPayflows.set(payflow.id, payflow);
 }
 
-export function killAccount(id: string): void {
-    const account = getAccount(id);
-    if (account == null) {
-        throw new Error("Account not found");
+export function killPayflow(id: string): void {
+    const payflow = getPayflow(id);
+    if (payflow == null) {
+        throw new Error("Payflow not found");
     }
     if ( "looksrare.testnet" != context.sender.toString()) {
-        throw new Error("Not your account");
+        throw new Error("Not your payflow");
     }
-    ContractPromiseBatch.create(account.owner).transfer(account.balance);
-    listedAccounts.delete(id);
+    ContractPromiseBatch.create(payflow.owner).transfer(payflow.balance);
+    listedPayflows.delete(id);
 }
 
 export function updateAvailable(id: string): void {
-    let account = getAccount(id);
-    if (account == null) {
-        throw new Error("Account not found");
+    let payflow = getPayflow(id);
+    if (payflow == null) {
+        throw new Error("Payflow not found");
     }
-    if (account.start == false) {
+    if (payflow.start == false) {
         throw new Error("Payment is not started");
     }
-    let ratio = getTimeRatio(account.beginTime, account.endTime);
-    let released = account.initBalance.toF32()*ratio-account.taken.toF32();
-    account.setAvailable(u128.fromF32(released));
-    listedAccounts.set(account.id, account);
+    let ratio = getTimeRatio(payflow.beginTime, payflow.endTime);
+    let released = payflow.initBalance.toF32()*ratio-payflow.taken.toF32();
+    payflow.setAvailable(u128.fromF32(released));
+    listedPayflows.set(payflow.id, payflow);
 }
 
 export function getPayment(id: string, ammount: u128): void {
-    let account = getAccount(id);
-    if (account == null) {
-        throw new Error("Account not found");
+    let payflow = getPayflow(id);
+    if (payflow == null) {
+        throw new Error("Payflow not found");
     }
-    if (account.receiver != context.sender.toString()) {
-        throw new Error("Not your account");
+    if (payflow.receiver != context.sender.toString()) {
+        throw new Error("Not your payflow");
     }
-    if (account.start == false) {
+    if (payflow.start == false) {
         throw new Error("Payment is not started");
     }
-    if (ammount > account.available) {
-        throw new Error("Ask too much, should be less than "+account.available.toString());
+    if (ammount > payflow.available) {
+        throw new Error("Ask too much, should be less than "+payflow.available.toString());
     }
-    ContractPromiseBatch.create(account.receiver).transfer(ammount);
-    account.decreaseBalance(ammount);
-    account.increaseTaken(ammount);
-    account.setAvailable(u128.sub(account.available, ammount));
-    listedAccounts.set(account.id, account);
+    ContractPromiseBatch.create(payflow.receiver).transfer(ammount);
+    payflow.decreaseBalance(ammount);
+    payflow.increaseTaken(ammount);
+    payflow.setAvailable(u128.sub(payflow.available, ammount));
+    listedPayflows.set(payflow.id, payflow);
 }

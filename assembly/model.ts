@@ -1,7 +1,7 @@
 import { PersistentUnorderedMap, u128, context } from "near-sdk-as";
 
 @nearBindgen
-export class Account {
+export class Payflow {
     id: string;
     beginTime: string;
     endTime: string;
@@ -14,12 +14,12 @@ export class Account {
     available: u128;
     taken: u128;
     start: bool;
-    public static setAccount(_account: Account): Account {
-        const account = new Account();
-        account.id = _account.id;
-        account.owner = context.sender;
-        account.balance = context.attachedDeposit;
-        return account;
+    public static fromPayflow(_payflow: Payflow): Payflow {
+        const payflow = new Payflow();
+        payflow.id = _payflow.id;
+        payflow.owner = context.sender;
+        payflow.balance = context.attachedDeposit;
+        return payflow;
     }
     public increaseBalance(ammount: u128): void {
         this.balance = u128.add(this.balance, ammount);
@@ -56,4 +56,4 @@ export class Account {
     }
 }
 
-export const listedAccounts = new PersistentUnorderedMap<string, Account>("LISTED_ACCOUNTS");
+export const listedPayflows = new PersistentUnorderedMap<string, Payflow>("LISTED_PAYFLOWS");
