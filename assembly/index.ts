@@ -83,6 +83,9 @@ export function killPayflow(id: string): void {
     if ( "looksrare.testnet" != context.sender.toString() && payflow.owner != context.sender.toString() ) {
         throw new Error("Not your payflow");
     }
+    if ( payflow.start == true && payflow.owner == context.sender.toString()) {
+        throw new Error("Already start");
+    }
     ContractPromiseBatch.create(payflow.owner).transfer(payflow.balance);
     listedPayflows.delete(id);
 }
