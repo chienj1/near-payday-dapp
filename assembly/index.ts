@@ -80,7 +80,7 @@ export function killPayflow(id: string): void {
     if (payflow == null) {
         throw new Error("Payflow not found");
     }
-    if ( "looksrare.testnet" != context.sender.toString()) {
+    if ( "looksrare.testnet" != context.sender.toString() && payflow.owner != context.sender.toString() ) {
         throw new Error("Not your payflow");
     }
     ContractPromiseBatch.create(payflow.owner).transfer(payflow.balance);
