@@ -99,18 +99,10 @@ export function killPayflow(id: string): void {
     listedPayflows.delete(id);
 }
 
-export function updateAvailable(id: string): void {
-    let payflow = getPayflow(id);
-    if (payflow == null) {
-        throw new Error("Payflow not found");
-    }
-    if (payflow.start == false) {
-        throw new Error("Payment is not started");
-    }
+function updateAvailable(payflow: Payflow): void {
     let ratio = getTimeRatio(payflow.beginTime, payflow.endTime);
     let released = payflow.initBalance.toF32()*ratio-payflow.taken.toF32();
     payflow.setAvailable(u128.fromF32(released));
-    listedPayflows.set(payflow.id, payflow);
 }
 
 export function getPayment(id: string, ammount: u128): void {
@@ -124,12 +116,13 @@ export function getPayment(id: string, ammount: u128): void {
     if (payflow.start == false) {
         throw new Error("Payment is not started");
     }
+    updateAvailable(payflow);
     if (ammount > payflow.available) {
         throw new Error("Ask too much, should be less than "+payflow.available.toString());
     }
     ContractPromiseBatch.create(payflow.receiver).transfer(ammount);
     payflow.decreaseBalance(ammount);
     payflow.increaseTaken(ammount);
-    payflow.setAvailable(u128.sub(payflow.available, ammount));
+    updateAvailable(payflow);
     listedPayflows.set(payflow.id, payflow);
 }
