@@ -20,7 +20,7 @@ near call ffpay.looksrare.testnet depositAssets '{"id":"1"}' --accountId=boss.lo
 
 near call ffpay.looksrare.testnet updateAvailable '{"id":"1"}' --accountId=boss.looksrare.testnet
 
-near call ffpay.looksrare.testnet startPayment '{"id":"1", "beginTime":"2022-05-21T01:00:00.000000000","endTime":"2022-05-22T1:00:00.000000000", "numofpay":2, "receiver":"employee.looksrare.testnet"}' --accountId=boss.looksrare.testnet
+near call ffpay.looksrare.testnet startPayment '{"id":"1", "beginTime":"2022-05-21T01:00:00.000000000","endTime":"2022-05-22T01:00:00.000000000", "numofpay":2, "receiver":"employee.looksrare.testnet"}' --accountId=boss.looksrare.testnet
 
 near call ffpay.looksrare.testnet getPayment '{"id":"1", "ammount":"50"}' --accountId=employee.looksrare.testnet
 

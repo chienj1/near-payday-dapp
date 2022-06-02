@@ -67,13 +67,13 @@ export function startPayment( id: string,
     if (payflow.start == true) {
         throw new Error("Payment already start");
     }
-    if (getTimeDiffInSecond(stringToDatetime(beginTime), getNowTime())>0) {
+    let now = getNowTime();
+    let btime = stringToDatetime(beginTime);
+    let etime = stringToDatetime(endTime);
+    if (getTimeDiffInSecond(btime, now)>0) {
         throw new Error("Time already passed");
     }
-    if (getTimeDiffInSecond(stringToDatetime(endTime), getNowTime())>0) {
-        throw new Error("Time already passed");
-    }
-    if (getTimeDiffInSecond(stringToDatetime(endTime), stringToDatetime(beginTime))>0) {
+    if (getTimeDiffInSecond(etime, btime)>0) {
         throw new Error("Wrong time sequence");
     }
     payflow.setBegin(beginTime);
