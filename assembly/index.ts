@@ -1,6 +1,6 @@
 import { Payflow, listedPayflows } from './model';
 import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
-import { getTimeRatio } from './timer';
+import { getTimeRatio, getTimeDiffInSecond, getNowTime, stringToDatetime } from './timer';
 
 export function setPayflow(payflow: Payflow): void {
     let storedPayflow = listedPayflows.get(payflow.id);
@@ -66,6 +66,15 @@ export function startPayment( id: string,
     }
     if (payflow.start == true) {
         throw new Error("Payment already start");
+    }
+    if (getTimeDiffInSecond(stringToDatetime(beginTime), getNowTime())>0) {
+        throw new Error("Time already passed");
+    }
+    if (getTimeDiffInSecond(stringToDatetime(endTime), getNowTime())>0) {
+        throw new Error("Time already passed");
+    }
+    if (getTimeDiffInSecond(stringToDatetime(endTime), stringToDatetime(beginTime))>0) {
+        throw new Error("Wrong time sequence");
     }
     payflow.setBegin(beginTime);
     payflow.setEnd(endTime);
