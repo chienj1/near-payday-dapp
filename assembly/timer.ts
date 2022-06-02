@@ -20,6 +20,12 @@ export function getTimeRatio(_beginTime: string, _endTime: string): f32 {
     let timeBeginToEnd = getTimeDiff(beginTime, endTime);
     let timeBeginToNow = getTimeDiff(beginTime, nowTime);
     let ratio = getDurationSecond(timeBeginToNow)/getDurationSecond(timeBeginToEnd);
-
-    return ratio;
+    let ratio_less_than_one = ratio<1;
+    if (ratio_less_than_one) {
+        return ratio;
+    }
+    else {
+        return 1.0000;
+    }
+    
 }
