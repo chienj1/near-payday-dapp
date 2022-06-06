@@ -1,6 +1,40 @@
 import { Payflow, listedPayflows } from './model';
-import { ContractPromiseBatch, context, u128 } from 'near-sdk-as';
-import { getTimeRatio, getTimeDiffInSecond, getNowTime, stringToDatetime } from './timer';
+import { ContractPromiseBatch, context, u128, datetime } from 'near-sdk-as';
+import { PlainDateTime, Duration } from "assemblyscript-temporal";
+
+// Time management
+function stringToDatetime(time: string): PlainDateTime {
+    return PlainDateTime.from(time);
+}
+
+function getTimeDiff(time1: PlainDateTime, time2: PlainDateTime): Duration {
+    return time1.until(time2);
+}
+
+function getNowTime(): PlainDateTime {
+    return datetime.block_datetime();
+}
+
+function getDurationSecond(duration: Duration): f32 {
+    return f32((((duration.years*365+duration.days)*24+duration.hours)*60+duration.minutes)*60+duration.seconds);
+}
+
+function getTimeDiffInSecond(time1: PlainDateTime, time2: PlainDateTime): f32 {
+    return getDurationSecond(getTimeDiff(time1, time2));
+}
+
+export function getTimeRatio(beginTime: string, endTime: string): f32 {
+    const bTime = stringToDatetime(beginTime);
+    const nowTime = getNowTime();
+    const eTime = stringToDatetime(endTime);
+    const top = getTimeDiffInSecond(bTime, nowTime);
+    const bot = getTimeDiffInSecond(bTime, eTime);
+    let ratio = top/bot;
+    if (ratio>1) {
+        ratio = 1;
+    }
+    return ratio;
+}
 
 export function setPayflow(payflow: Payflow): void {
     let storedPayflow = listedPayflows.get(payflow.id);
@@ -99,10 +133,10 @@ export function killPayflow(id: string): void {
     listedPayflows.delete(id);
 }
 
-function updateAvailable(payflow: Payflow): void {
-    let ratio = getTimeRatio(payflow.beginTime, payflow.endTime);
-    let released = payflow.initBalance.toF32()*ratio-payflow.taken.toF32();
-    payflow.setAvailable(u128.fromF32(released));
+export function updateAvailable(beginTime: string, endTime: string,
+                                initBalance: u128, taken: u128): f32 {
+    let ratio = getTimeRatio(beginTime, endTime);
+    return ratio*initBalance.toF32()-taken.toF32();
 }
 
 export function getPayment(id: string, ammount: u128): void {
@@ -116,12 +150,21 @@ export function getPayment(id: string, ammount: u128): void {
     if (payflow.start == false) {
         throw new Error("Payment is not started");
     }
-    updateAvailable(payflow);
-    if (ammount > payflow.available) {
-        throw new Error("Ask too much, should be less than "+payflow.available.toString());
+    const now = getNowTime();
+    const btime = stringToDatetime(payflow.beginTime);
+    if (getTimeDiffInSecond(btime, now)<=0) {
+        throw new Error("Payment is not arrived");
+    }
+    let available = u128.fromF32(updateAvailable(payflow.beginTime, 
+                                                 payflow.endTime, 
+                                                 payflow.initBalance, 
+                                                 payflow.taken));
+    if (ammount > available) {
+        throw new Error("Ask too much, should be less than "+available.toString());
     }
     ContractPromiseBatch.create(payflow.receiver).transfer(ammount);
     payflow.decreaseBalance(ammount);
     payflow.increaseTaken(ammount);
+    payflow.setAvailable(available);
     listedPayflows.set(payflow.id, payflow);
 }
