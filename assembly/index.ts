@@ -1,8 +1,10 @@
 import { Payflow, listedPayflows } from './model';
 import { ContractPromiseBatch, context, u128, datetime } from 'near-sdk-as';
 import { PlainDateTime, Duration } from "assemblyscript-temporal";
+import { parseNearAmount, formatNearAmount } from "near-api-js/lib/utils/format";
 
 // Time management
+/********************************************************************* */
 function stringToDatetime(time: string): PlainDateTime {
     return PlainDateTime.from(time);
 }
@@ -35,7 +37,10 @@ export function getTimeRatio(beginTime: string, endTime: string): f32 {
     }
     return ratio;
 }
+/********************************************************************* */
 
+// Payflow management
+/********************************************************************* */
 export function setPayflow(payflow: Payflow): void {
     let storedPayflow = listedPayflows.get(payflow.id);
     if (storedPayflow != null) {
@@ -167,4 +172,17 @@ export function getPayment(id: string, ammount: u128): void {
     payflow.increaseTaken(ammount);
     payflow.setAvailable(available);
     listedPayflows.set(payflow.id, payflow);
+}
+/********************************************************************* */
+
+export function f32tou128(number: f32): u128 {
+    return u128.fromF32(number);
+}
+
+export function f32toString(number: f32): string {
+    return number.toString();
+}
+
+export function f32tof32(number: f32): f32 {
+    return number;
 }
