@@ -1,7 +1,6 @@
 import { Payflow, listedPayflows } from './model';
 import { ContractPromiseBatch, context, u128, datetime } from 'near-sdk-as';
 import { PlainDateTime, Duration } from "assemblyscript-temporal";
-import { parseNearAmount, formatNearAmount } from "near-api-js/lib/utils/format";
 
 // Time management
 /********************************************************************* */
@@ -17,25 +16,25 @@ function getNowTime(): PlainDateTime {
     return datetime.block_datetime();
 }
 
-function getDurationSecond(duration: Duration): f32 {
-    return f32((((duration.years*365+duration.days)*24+duration.hours)*60+duration.minutes)*60+duration.seconds);
+function getDurationSecond(duration: Duration): u128 {
+    return u128.from((((duration.years*365+duration.days)*24+duration.hours)*60+duration.minutes)*60+duration.seconds);
 }
 
-function getTimeDiffInSecond(time1: PlainDateTime, time2: PlainDateTime): f32 {
+function getTimeDiffInSecond(time1: PlainDateTime, time2: PlainDateTime): u128 {
     return getDurationSecond(getTimeDiff(time1, time2));
 }
 
-export function getTimeRatio(beginTime: string, endTime: string): f32 {
+export function getTimeRatio(beginTime: string, endTime: string): u128[] {
     const bTime = stringToDatetime(beginTime);
     const nowTime = getNowTime();
     const eTime = stringToDatetime(endTime);
-    const top = getTimeDiffInSecond(bTime, nowTime);
-    const bot = getTimeDiffInSecond(bTime, eTime);
-    let ratio = top/bot;
-    if (ratio>1) {
-        ratio = 1;
+    let top = getTimeDiffInSecond(bTime, nowTime);
+    let bot = getTimeDiffInSecond(bTime, eTime);
+    if (top>bot) {
+        top = u128.One;
+        bot = u128.One;
     }
-    return ratio;
+    return [top, bot];
 }
 /********************************************************************* */
 
@@ -109,10 +108,10 @@ export function startPayment( id: string,
     let now = getNowTime();
     let btime = stringToDatetime(beginTime);
     let etime = stringToDatetime(endTime);
-    if (getTimeDiffInSecond(btime, now)>0) {
+    if (getTimeDiffInSecond(btime, now)>u128.Zero) {
         throw new Error("Time already passed");
     }
-    if (getTimeDiffInSecond(etime, btime)>0) {
+    if (getTimeDiffInSecond(etime, btime)>u128.Zero) {
         throw new Error("Wrong time sequence");
     }
     payflow.setBegin(beginTime);
@@ -139,9 +138,10 @@ export function killPayflow(id: string): void {
 }
 
 export function updateAvailable(beginTime: string, endTime: string,
-                                initBalance: u128, taken: u128): f32 {
+                                initBalance: u128, taken: u128): u128 {
     let ratio = getTimeRatio(beginTime, endTime);
-    return ratio*initBalance.toF32()-taken.toF32();
+    return u128.sub(u128.mul(u128.div(initBalance, ratio[1]), ratio[0]), taken);
+    //return u128.div(initBalance, ratio[1]);
 }
 
 export function getPayment(id: string, ammount: u128): void {
@@ -157,13 +157,13 @@ export function getPayment(id: string, ammount: u128): void {
     }
     const now = getNowTime();
     const btime = stringToDatetime(payflow.beginTime);
-    if (getTimeDiffInSecond(btime, now)<=0) {
+    if (getTimeDiffInSecond(btime, now)<=u128.Zero) {
         throw new Error("Payment is not arrived");
     }
-    let available = u128.fromF32(updateAvailable(payflow.beginTime, 
-                                                 payflow.endTime, 
-                                                 payflow.initBalance, 
-                                                 payflow.taken));
+    let available = updateAvailable(payflow.beginTime, 
+                                    payflow.endTime, 
+                                    payflow.initBalance, 
+                                    payflow.taken);
     if (ammount > available) {
         throw new Error("Ask too much, should be less than "+available.toString());
     }
@@ -172,17 +172,4 @@ export function getPayment(id: string, ammount: u128): void {
     payflow.increaseTaken(ammount);
     payflow.setAvailable(available);
     listedPayflows.set(payflow.id, payflow);
-}
-/********************************************************************* */
-
-export function f32tou128(number: f32): u128 {
-    return u128.fromF32(number);
-}
-
-export function f32toString(number: f32): string {
-    return number.toString();
-}
-
-export function f32tof32(number: f32): f32 {
-    return number;
 }
