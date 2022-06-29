@@ -170,6 +170,6 @@ export function getPayment(id: string, ammount: u128): void {
     ContractPromiseBatch.create(payflow.receiver).transfer(ammount);
     payflow.decreaseBalance(ammount);
     payflow.increaseTaken(ammount);
-    payflow.setAvailable(available);
+    payflow.setAvailable(u128.sub(available, ammount));
     listedPayflows.set(payflow.id, payflow);
 }
