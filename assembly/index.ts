@@ -108,11 +108,11 @@ export function startPayment( id: string,
     let now = getNowTime();
     let btime = stringToDatetime(beginTime);
     let etime = stringToDatetime(endTime);
-    if (getTimeDiffInSecond(btime, now)>u128.Zero) {
-        throw new Error("Time already passed");
-    }
-    if (getTimeDiffInSecond(etime, btime)>u128.Zero) {
+    if (PlainDateTime.compare(etime, btime)==-1) {
         throw new Error("Wrong time sequence");
+    }
+    if (PlainDateTime.compare(btime, now)==-1) {
+        throw new Error("Time already passed");
     }
     payflow.setBegin(beginTime);
     payflow.setEnd(endTime);
@@ -141,7 +141,6 @@ export function updateAvailable(beginTime: string, endTime: string,
                                 initBalance: u128, taken: u128): u128 {
     let ratio = getTimeRatio(beginTime, endTime);
     return u128.sub(u128.mul(u128.div(initBalance, ratio[1]), ratio[0]), taken);
-    //return u128.div(initBalance, ratio[1]);
 }
 
 export function getPayment(id: string, ammount: u128): void {
